@@ -1,0 +1,239 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Іспансько-український словник{% endblock %}
+
+{% block body %}
+    <div class="min-h-screen bg-[#FDFBF7] py-10 px-4 sm:px-6 lg:px-8" style="font-family: 'Plus Jakarta Sans', sans-serif;">
+        <div class="max-w-5xl mx-auto space-y-8">
+
+            <!-- Заголовок сторінки -->
+            <div class="text-center">
+                <h1 class="text-3xl font-extrabold text-[#4A4033] tracking-tight">Іспансько-український словник</h1>
+                <p class="text-sm text-[#7A6B5D] mt-2">Тематичні категорії та слова з транскрипцією</p>
+            </div>
+
+            <!-- Кнопка запуску тренажера з початку -->
+            <div class="text-center mb-8">
+                <button onclick="openTrainer()" class="px-6 py-3 bg-[#C8B096] hover:bg-[#b59d83] text-white font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-2 mx-auto text-base">
+                    <span>🚀</span> Запустити тренажер (з початку)
+                </button>
+            </div>
+
+            {% for categoryName, wordList in wordsData %}
+                <div class="bg-[#F7F2EB] shadow-md rounded-2xl overflow-hidden border border-[#EBE3D5] category-container">
+
+                    <!-- Шапка категорії (клік відкриває/закриває список) -->
+                    <div onclick="toggleCategory(this)" class="bg-[#D9C3A9] px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer select-none hover:ce-bg transition-colors">
+                        <div class="flex items-center gap-3">
+                            <!-- Іконка-стрілочка, яка обертається -->
+                            <span class="category-arrow transform transition-transform duration-300 text-[#594838] font-bold text-sm">▼</span>
+                            <div>
+                                <span class="text-xs font-bold uppercase tracking-wider text-[#594838] bg-[#EFE8DC] px-3 py-1 rounded-full shadow-sm">Категорія {{ loop.index }}</span>
+                                <h2 class="text-lg font-bold text-[#3B3024] mt-2">{{ categoryName }}</h2>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3 self-start sm:self-auto">
+                            <button onclick="event.stopPropagation(); openTrainer('{{ categoryName|e('js') }}')" class="px-4 py-2 bg-[#FDFBF7] hover:bg-[#F3ECE1] text-[#594838] text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5 border border-[#EBE3D5]">
+                                <span>▶</span> Почати з цієї категорії
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Список слів у категорії (спочатку відкритий, клас hidden за бажанням можна прибрати, якщо хочете щоб за замовчуванням всі були відкриті) -->
+                    <div class="category-content divide-y divide-[#EBE3D5] transition-all duration-300">
+                        {% for wordItem in wordList %}
+                            <div class="p-4 sm:p-6 hover:bg-[#F3ECE1] transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <!-- Іспанське слово та транскрипція -->
+                                <div class="flex flex-col items-start">
+                                    <span class="text-xl font-bold text-[#3B3024]">{{ wordItem[0] }}</span>
+                                    <span class="text-xs font-mono text-[#8C7A6B] mt-0.5">{{ wordItem[1] }}</span>
+                                </div>
+
+                                <!-- Переклад -->
+                                <div class="text-sm font-medium text-[#594838] sm:text-right">
+                                    {{ wordItem[2] }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                </div>
+            {% endfor %}
+
+        </div>
+    </div>
+
+    <!-- Модальне вікно тренажера -->
+    <div id="trainerModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-[#F7F2EB] border border-[#EBE3D5] rounded-3xl shadow-2xl max-w-lg w-full p-8 text-center relative overflow-hidden transform transition-all">
+
+            <!-- Кнопка закриття (Х) -->
+            <button onclick="closeTrainer()" class="absolute top-4 right-4 text-[#7A6B5D] hover:text-[#3B3024] text-xl font-bold bg-[#EFE8DC] w-10 h-10 rounded-full flex items-center justify-center transition-colors">
+                &times;
+            </button>
+
+            <!-- Назва категорії -->
+            <span id="trainerCategory" class="text-xs font-bold uppercase tracking-wider text-[#594838] bg-[#EFE8DC] px-3 py-1 rounded-full shadow-sm">
+            Категорія
+        </span>
+
+            <!-- Контейнер для слова, транскрипції та перекладу -->
+            <div class="my-6 min-h-[160px] flex flex-col items-center justify-center">
+                <div id="trainerContentBox" class="opacity-0 transform translate-y-4 transition-all duration-300 space-y-4">
+                    <div>
+                        <h2 id="trainerWord" class="text-4xl font-extrabold text-[#3B3024] tracking-tight">---</h2>
+                        <p id="trainerTranscription" class="text-sm font-mono text-[#8C7A6B] mt-1">---</p>
+                    </div>
+                    <div>
+                    <span id="trainerTranslateText" class="px-6 py-3 bg-[#C8B096] text-white text-xl font-bold rounded-2xl shadow-md inline-block">
+                        ---
+                    </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Прогрес-бар / Статус -->
+            <div class="mt-8 pt-4 border-t border-[#EBE3D5] flex justify-between items-center text-xs text-[#7A6B5D] font-medium">
+                <span id="trainerProgress">Слово 0 / 0</span>
+                <button onclick="stopTrainer()" class="text-[#7A6B5D] hover:text-[#3B3024] font-medium transition-colors">Зупинити</button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- JavaScript для аккордеону та тренажера -->
+    <script>
+        // Функція для згортання/розгортання категорії по кліку на шапку
+        function toggleCategory(headerElement) {
+            const container = headerElement.closest('.category-container');
+            const content = container.querySelector('.category-content');
+            const arrow = headerElement.querySelector('.category-arrow');
+
+            content.classList.toggle('hidden');
+
+            if (content.classList.contains('hidden')) {
+                arrow.style.transform = 'rotate(-90deg)';
+            } else {
+                arrow.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        const dictionaryData = {{ wordsData|json_encode|raw }};
+
+        const CONFIG = {
+            showDuration: 3500,
+            hideDuration: 1000,
+            pauseBetweenWords: 1000
+        };
+
+        let modal = document.getElementById('trainerModal');
+        let categoryEl = document.getElementById('trainerCategory');
+        let contentBox = document.getElementById('trainerContentBox');
+        let wordEl = document.getElementById('trainerWord');
+        let transcriptionEl = document.getElementById('trainerTranscription');
+        let translateText = document.getElementById('trainerTranslateText');
+        let progressEl = document.getElementById('trainerProgress');
+
+        let isRunning = false;
+        let timeouts = [];
+
+        function clearAllTimeouts() {
+            timeouts.forEach(t => clearTimeout(t));
+            timeouts = [];
+        }
+
+        function openTrainer(startCategory = null) {
+            modal.classList.remove('hidden');
+            isRunning = true;
+            startTrainingSequence(startCategory);
+        }
+
+        function closeTrainer() {
+            modal.classList.add('hidden');
+            isRunning = false;
+            clearAllTimeouts();
+        }
+
+        function stopTrainer() {
+            closeTrainer();
+        }
+
+        async function startTrainingSequence(startCategory = null) {
+            let categoryNames = Object.keys(dictionaryData);
+
+            if (startCategory) {
+                let startIndex = categoryNames.indexOf(startCategory);
+                if (startIndex !== -1) {
+                    categoryNames = categoryNames.slice(startIndex);
+                }
+            }
+
+            let totalWords = 0;
+            categoryNames.forEach(catName => {
+                totalWords += dictionaryData[catName].length;
+            });
+
+            let globalWordIndex = 1;
+
+            for (let cIdx = 0; cIdx < categoryNames.length; cIdx++) {
+                if (!isRunning) break;
+
+                let categoryName = categoryNames[cIdx];
+                let wordList = dictionaryData[categoryName];
+
+                for (let i = 0; i < wordList.length; i++) {
+                    if (!isRunning) break;
+
+                    let wordItem = wordList[i];
+                    let spanishWord = wordItem[0];
+                    let transcription = wordItem[1];
+                    let translation = wordItem[2];
+
+                    categoryEl.innerText = categoryName;
+                    wordEl.innerText = spanishWord;
+                    transcriptionEl.innerText = transcription;
+                    translateText.innerText = translation;
+                    progressEl.innerText = `Слово ${globalWordIndex} з ${totalWords}`;
+                    globalWordIndex++;
+
+                    for (let attempt = 0; attempt < 3; attempt++) {
+                        if (!isRunning) break;
+
+                        contentBox.classList.remove('opacity-0', 'translate-y-4');
+
+                        await new Promise(resolve => {
+                            let t = setTimeout(resolve, CONFIG.showDuration);
+                            timeouts.push(t);
+                        });
+
+                        if (!isRunning) break;
+
+                        contentBox.classList.add('opacity-0', 'translate-y-4');
+
+                        await new Promise(resolve => {
+                            let t = setTimeout(resolve, CONFIG.hideDuration);
+                            timeouts.push(t);
+                        });
+                    }
+
+                    if (!isRunning) break;
+
+                    await new Promise(resolve => {
+                        let t = setTimeout(resolve, CONFIG.pauseBetweenWords);
+                        timeouts.push(t);
+                    });
+                }
+            }
+
+            if (isRunning) {
+                categoryEl.innerText = "Вітаю!";
+                wordEl.innerText = "Кінець тренування! 🎉";
+                transcriptionEl.innerText = "";
+                translateText.innerText = "";
+                contentBox.classList.remove('opacity-0', 'translate-y-4');
+                progressEl.innerText = "Усі слова пройдено";
+            }
+        }
+    </script>
+{% endblock %}

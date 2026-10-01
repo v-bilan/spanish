@@ -2,44 +2,30 @@
 
 namespace App\Service;
 
-class Verb
+abstract class Verb
 {
     public function __construct(
-        private readonly CsvManager $csvManager,
-        private readonly array $fullyIrregularVerbs = ['dar', 'estar', 'haber', 'ir', 'ser']
-    ) {
+        private readonly CsvManager $csvManager
+    ) {}
 
-    }
 
-    private function isIrregularVerb(string $verb, string $form, int $person): bool
+    protected abstract function getFullyIrregularVerbs(): array;
+
+
+    private function isIrregularForm(string $verb, string $form, int $person): bool
     {
        $rootOfVerb = mb_substr($verb, 0, -2);
        $ending = mb_substr($form, mb_strlen($rootOfVerb));
-       return in_array(mb_strtolower(trim($verb)), $this->fullyIrregularVerbs)
+       return in_array(mb_strtolower(trim($verb)), $this->getFullyIrregularVerbs())
            || !str_starts_with($form, $rootOfVerb)
            || !$this->isValidRegularSpanishVerbForm($ending, $person);
     }
-    function isValidRegularSpanishVerbForm(string $ending, int $person): bool
-    {
-        $ending = mb_strtolower(trim($ending), 'UTF-8');
+    protected abstract function isValidRegularSpanishVerbForm(string $ending, int $person): bool;
 
-        $endings = [
-            0 => ['o'],         // yo (-ar, -er, -ir)
-            1 => ['as', 'es'],       // tú
-            2 => ['a', 'e'],         // él / ella / usted
-            3 => ['amos', 'emos', 'imos'], // nosotros
-            4 => ['áis', 'éis', 'ís'],     // vosotros
-            5 => ['an', 'en']        // ellos / ellas / ustedes
-        ];
-        if (!isset($endings[$person])) {
-            return false;
-        }
-
-        return in_array($ending, $endings[$person]);
-    }
-    public function getPresenteVerbs(): array
+    public function getVerbs(): array
     {
-        $dataRows = $this->csvManager->readCsv('/csv/verbs/presente.csv');
+        $dataRows = $this->csvManager->readCsv($this->getPath());
+
         $items = [];
         $key = null;
         foreach ($dataRows as $dataRow) {
@@ -55,28 +41,29 @@ class Verb
         return $items;
     }
 
+    abstract protected function getPath(): string;
     private function prepareData(array $dataRow): array
     {
         $word = $dataRow[0] ?? '';
         $result = [
             'word' => $word,
-            'translation' => $dataRow[1] ?? ''
+            'transl' => $dataRow[1] ?? ''
         ];
         unset($dataRow[0], $dataRow[1]);
-        $result['forms'] = $this->preparePresenteVerbs($word,$dataRow);
+        $result['forms'] = $this->prepareVerbs($word,$dataRow);
+
         return $result;
     }
-    private function preparePresenteVerbs(string $word, array $items): array
+    private function prepareVerbs(string $word, array $items): array
     {
         $result = [];
         foreach ($items as $person => $item) {
             $result[] = [
                 'word'=>$item,
-                'isIrregular' => $this->isIrregularVerb($word, $item, $person - 2),
+                'isIrregular' => $this->isIrregularForm($word, $item, $person - 2),
             ];
         }
         return $result;
     }
-
 
 }

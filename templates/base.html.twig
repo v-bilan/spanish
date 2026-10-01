@@ -1,47 +1,77 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
-        {% block stylesheets %}
-        {% endblock %}
+<html class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Welcome!{% endblock %}</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>🇪🇸</text></svg>">
+    {% block stylesheets %}
+    {% endblock %}
 
-        {% block javascripts %}
-            {% block importmap %}{{ importmap('app') }}{% endblock %}
-        {% endblock %}
+    {% block javascripts %}
+        {% block importmap %}{{ importmap('app') }}{% endblock %}
+    {% endblock %}
 
-        {% set frankenphp_hot_reload = app.request.server.get('FRANKENPHP_HOT_RELOAD') %}
-        {% if frankenphp_hot_reload %}
+    {% set frankenphp_hot_reload = app.request.server.get('FRANKENPHP_HOT_RELOAD') %}
+    {% if frankenphp_hot_reload %}
         <meta name="frankenphp-hot-reload:url" content="{{ frankenphp_hot_reload }}">
         <script src="https://cdn.jsdelivr.net/npm/idiomorph"></script>
         <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
-        {% endif %}
-    </head>
-    <body class="h-full font-sans text-[#3B3024] antialiased flex flex-col justify-between">
+    {% endif %}
+</head>
+<body class="h-full font-sans text-[#3B3024] antialiased flex flex-col justify-between" style="background-color: #FDFBF7;">
 
-        {# Шапка сайту (Header) #}
-        <header class="bg-[#F7F2EB] border-b border-[#EBE3D5] py-4 px-6 shadow-sm">
-            <div class="max-w-4xl mx-auto flex justify-between items-center">
-                <a href="/" class="text-xl font-bold tracking-tight text-[#4A4033] flex items-center gap-2">
-                    <span>🇪🇸</span> Словарний Тренажер
+<!-- Шапка сайту з головним меню -->
+<header class="py-4 px-4 sm:px-6 lg:px-8">
+    <nav class="max-w-5xl mx-auto bg-[#F7F2EB] border border-[#EBE3D5] rounded-2xl shadow-sm px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-8">
+            <!-- Логотип / Головна -->
+            <a href="{{ path('app_verbs_presente_list') }}" class="text-xl font-extrabold text-[#3B3024] tracking-tight flex items-center gap-2 focus:outline-none">
+                <span>🇪🇸</span> Español
+            </a>
+
+            <!-- Посилання меню -->
+            <div class="hidden md:flex items-center gap-6">
+                <a href="{{ path('app_words_list') }}" class="text-sm font-semibold text-[#594838] hover:text-[#3B3024] transition-colors px-3 py-2 rounded-lg hover:bg-[#EFE8DC] focus:outline-none">
+                    Слова
                 </a>
-                <nav class="text-sm font-medium text-[#7A6B5D]">
-                    <a href="/" class="hover:text-[#3B3024] transition-colors">Головна</a>
-                </nav>
-            </div>
-        </header>
 
-        {# Головний контент сторінки #}
-        <main class="flex-grow">
-            {% block body %}{% endblock %}
-        </main>
+                <!-- Випадаюче меню для Дієслів -->
+                <div class="relative group">
+                    <button class="text-sm font-semibold text-[#594838] hover:text-[#3B3024] transition-colors px-3 py-2 rounded-lg hover:bg-[#EFE8DC] flex items-center gap-1 focus:outline-none">
+                        Дієслова
+                        <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
 
-        {# Підвал сайту (Footer) #}
-        <footer class="bg-[#F7F2EB] border-t border-[#EBE3D5] py-6 px-6 text-center text-xs text-[#7A6B5D]">
-            <div class="max-w-4xl mx-auto">
-                <p>&copy; {{ "now"|date("Y") }} Навчальний проєкт. Зроблено з любов'ю на Symfony та Tailwind CSS.</p>
+                    <!-- Підменю (Dropdown) -->
+                    <div class="absolute left-0 pt-2 w-56 hidden group-hover:block z-20">
+                        <div class="bg-[#F7F2EB] border border-[#EBE3D5] rounded-xl shadow-lg py-2">
+                            <div class="px-4 py-1 text-xs font-bold uppercase text-[#7A6B5D] tracking-wider">Presente</div>
+                            <a href="{{ path('app_verbs_presente_list') }}" class="block px-4 py-2 text-sm text-[#594838] hover:bg-[#EFE8DC] hover:text-[#3B3024] focus:outline-none">Indefinido</a>
+
+                            <div class="border-t border-[#EBE3D5] my-1"></div>
+
+                            <div class="px-4 py-1 text-xs font-bold uppercase text-[#7A6B5D] tracking-wider">Pretérito</div>
+                            <a href="{{ path('app_verbs_preterito_list') }}" class="block px-4 py-2 text-sm text-[#594838] hover:bg-[#EFE8DC] hover:text-[#3B3024] focus:outline-none">Indefinido</a>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </footer>
-    </body>
+        </div>
+    </nav>
+</header>
+
+{# Головний контент сторінки #}
+<main class="flex-grow max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8">
+    {% block body %}{% endblock %}
+</main>
+
+{# Підвал сайту (Footer) #}
+<footer class="bg-[#F7F2EB] border-t border-[#EBE3D5] py-6 px-6 text-center text-xs text-[#7A6B5D] mt-8">
+    <div class="max-w-4xl mx-auto">
+        <p>&copy; {{ "now"|date("Y") }} Навчальний проєкт. Зроблено з любов'ю на Symfony та Tailwind CSS.</p>
+    </div>
+</footer>
+</body>
 </html>

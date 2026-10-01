@@ -1,0 +1,279 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello VerbsController!{% endblock %}
+
+{% block body %}
+    <!-- Підключення шрифту Plus Jakarta Sans з Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Збільшили максимальну ширину контейнера з max-w-4xl до max-w-5xl -->
+    <div class="min-h-screen bg-[#FDFBF7] py-10 px-4 sm:px-6 lg:px-8" style="font-family: 'Plus Jakarta Sans', sans-serif;">
+        <div class="max-w-5xl mx-auto space-y-8">
+
+            <!-- Заголовок сторінки -->
+            <div class="text-center">
+                <h1 class="text-3xl font-extrabold text-[#4A4033] tracking-tight">Іспанські дієслова</h1>
+                <p class="mt-2 text-sm text-[#7A6B5D]">Колекція неправильних форм для вивчення</p>
+            </div>
+
+            <!-- Кнопка запуску тренажера з початку -->
+            <div class="text-center mb-8">
+                <button onclick="openTrainer()" class="px-6 py-3 bg-[#C8B096] hover:bg-[#b59d83] text-white font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-2 mx-auto text-base">
+                    <span>🚀</span> Запустити тренажер (з початку)
+                </button>
+            </div>
+
+            {% for group, verbList in verbs %}
+                <div class="bg-[#F7F2EB] shadow-md rounded-2xl overflow-hidden border border-[#EBE3D5]">
+                    <!-- Шапка групи з динамічним номером та кнопкою "Почати звідси" -->
+                    <div class="bg-[#D9C3A9] px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <span class="text-xs font-bold uppercase tracking-wider text-[#594838] bg-[#EFE8DC] px-3 py-1 rounded-full shadow-sm">Група {{ loop.index }}</span>
+                            <h2 class="text-lg font-bold text-[#3B3024] mt-2">{{ group }}</h2>
+                        </div>
+                        <!-- Кнопка старту з конкретної групи -->
+                        <button onclick="openTrainer('{{ group|e('js') }}')" class="px-4 py-2 bg-[#FDFBF7] hover:bg-[#F3ECE1] text-[#594838] text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5 self-start sm:self-auto border border-[#EBE3D5]">
+                            <span>▶</span> Почати з цієї групи
+                        </button>
+                    </div>
+
+                    <div class="divide-y divide-[#EBE3D5]">
+                        {% for verbData in verbList %}
+                            <div class="p-6 hover:bg-[#F3ECE1] transition-colors">
+                                <!-- Використовуємо flex-col для мобільних, а на lg вирівнюємо в рядок із більшим простором (gap-6) -->
+                                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+
+                                    <!-- Слово і переклад ПІД ним -->
+                                    <div class="flex flex-col items-start min-w-[160px]">
+                                        <span class="text-2xl font-bold text-[#3B3024]">{{ verbData.word }}</span>
+                                        <span class="text-sm font-medium text-[#7A6B5D] mt-1">{{ verbData.translation }}</span>
+                                    </div>
+
+                                    <!-- Форми дієслова: сітка на 6 рівних колонок на великих екранах, або авто-сітка -->
+                                    <div class="grid grid-cols-3 sm:grid-cols-6 gap-2 w-full lg:w-auto">
+                                        {% for form in verbData.forms %}
+                                            {% if form.isIrregular %}
+                                                <span class="px-3 py-2 bg-[#C8B096] text-white text-sm sm:text-base font-bold rounded-lg shadow-sm text-center flex items-center justify-center">{{ form.word }}</span>
+                                            {% else %}
+                                                <span class="px-3 py-2 bg-[#EBE3D5] text-[#594838] text-sm sm:text-base font-medium rounded-lg text-center flex items-center justify-center">{{ form.word }}</span>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+
+        </div>
+    </div>
+
+    <!-- Модальне вікно тренажера -->
+    <div id="trainerModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-[#F7F2EB] border border-[#EBE3D5] rounded-3xl shadow-2xl max-w-lg w-full p-8 text-center relative overflow-hidden transform transition-all">
+
+            <!-- Кнопка закриття (Х) -->
+            <button onclick="closeTrainer()" class="absolute top-4 right-4 text-[#7A6B5D] hover:text-[#3B3024] text-xl font-bold bg-[#EFE8DC] w-10 h-10 rounded-full flex items-center justify-center transition-colors">
+                &times;
+            </button>
+
+            <!-- Назва групи -->
+            <span id="trainerGroup" class="text-xs font-bold uppercase tracking-wider text-[#594838] bg-[#EFE8DC] px-3 py-1 rounded-full shadow-sm">
+                Група
+            </span>
+
+            <!-- Основне слово та переклад -->
+            <div class="my-8">
+                <h2 id="trainerWord" class="text-4xl font-extrabold text-[#3B3024] tracking-tight">---</h2>
+                <p id="trainerTranslation" class="text-lg font-medium text-[#7A6B5D] mt-2">---</p>
+            </div>
+
+            <!-- Контейнер для форми, що зараз показується -->
+            <div class="min-h-[90px] flex items-center justify-center">
+                <div id="trainerFormBox" class="opacity-0 transform translate-y-4 transition-all duration-300">
+                    <span id="trainerFormText" class="px-6 py-3 bg-[#C8B096] text-white text-2xl font-bold rounded-2xl shadow-md inline-block">
+                        ---
+                    </span>
+                </div>
+            </div>
+
+            <!-- Прогрес-бар / Статус -->
+            <div class="mt-8 pt-4 border-t border-[#EBE3D5] flex justify-between items-center text-xs text-[#7A6B5D] font-medium">
+                <span id="trainerProgress">Слово 0 / 0</span>
+                <button onclick="stopTrainer()" class="text-[#7A6B5D] hover:text-[#3B3024] font-medium transition-colors">Зупинити</button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- JavaScript для керування тренажером -->
+    <!-- JavaScript для керування тренажером -->
+    <script>
+        // Передаємо PHP масив у JavaScript через JSON
+        const verbsData = {{ verbs|json_encode|raw }};
+
+        // НАЛАШТУВАННЯ ЧАСУ (у мілісекундах: 1000мс = 1 секунда)
+        const CONFIG = {
+            wordDisplayDelay: 4000,     // Затримка перед показом форм (показується слово + переклад)
+            formDisplayDuration: 3500,  // Скільки часу видима кожна окрема форма дієслова
+            pauseBetweenWords: 1500     // Пауза між різними словами
+        };
+
+        // Масиви варіантів займенників для 3-ї особи однини та множини (індекси 2 та 5)
+        const singularThirdPersonVariants = ["él", "ella", "usted"];
+        const pluralThirdPersonVariants = ["ellos", "ellas", "ustedes"];
+
+        let modal = document.getElementById('trainerModal');
+        let groupEl = document.getElementById('trainerGroup');
+        let wordEl = document.getElementById('trainerWord');
+        let translationEl = document.getElementById('trainerTranslation');
+        let formBox = document.getElementById('trainerFormBox');
+        let formText = document.getElementById('trainerFormText');
+        let progressEl = document.getElementById('trainerProgress');
+
+        let isRunning = false;
+        let timeouts = [];
+
+        function clearAllTimeouts() {
+            timeouts.forEach(t => clearTimeout(t));
+            timeouts = [];
+        }
+
+        // Приймає необов'язковий параметр startGroup (назву групи з якої треба почати)
+        function openTrainer(startGroup = null) {
+            modal.classList.remove('hidden');
+            isRunning = true;
+            startTrainingSequence(startGroup);
+        }
+
+        function closeTrainer() {
+            modal.classList.add('hidden');
+            isRunning = false;
+            clearAllTimeouts();
+        }
+
+        function stopTrainer() {
+            closeTrainer();
+        }
+
+        async function startTrainingSequence(startGroup = null) {
+            // Збираємо всі ключі груп
+            let groupNames = Object.keys(verbsData);
+
+            // Якщо передано конкретну групу, знаходимо її індекс і залишаємо у черзі тільки її та наступні
+            if (startGroup) {
+                let startIndex = groupNames.indexOf(startGroup);
+                if (startIndex !== -1) {
+                    groupNames = groupNames.slice(startIndex);
+                }
+            }
+
+            // Рахуємо загальну кількість слів для відображення в прогресі
+            let totalWords = 0;
+            groupNames.forEach(gName => {
+                totalWords += verbsData[gName].length;
+            });
+
+            let globalWordIndex = 1;
+
+            for (let gIdx = 0; gIdx < groupNames.length; gIdx++) {
+                if (!isRunning) break;
+
+                let groupName = groupNames[gIdx];
+                let verbList = verbsData[groupName];
+
+                for (let i = 0; i < verbList.length; i++) {
+                    if (!isRunning) break;
+
+                    let item = verbList[i];
+
+                    // Оновлюємо інформацію на екрані для поточного слова
+                    groupEl.innerText = groupName;
+                    wordEl.innerText = item.word;
+                    translationEl.innerText = item.translation;
+                    formBox.classList.add('opacity-0', 'translate-y-4');
+                    formText.innerHTML = '';
+                    progressEl.innerText = `Слово ${globalWordIndex} з ${totalWords}`;
+                    globalWordIndex++;
+
+                    // Затримка перед появою першої форми
+                    await new Promise(resolve => {
+                        let t = setTimeout(resolve, CONFIG.wordDisplayDelay);
+                        timeouts.push(t);
+                    });
+
+                    if (!isRunning) break;
+
+                    // Послідовність форм: повторюємо цикл форм тричі (18 кроків)
+                    let forms = item.forms;
+                    let totalCycles = 3;
+                    let totalSteps = forms.length * totalCycles;
+
+                    for (let step = 0; step < totalSteps; step++) {
+                        if (!isRunning) break;
+
+                        let formIndex = step % forms.length;
+                        let cycleIndex = Math.floor(step / forms.length); // 0, 1 або 2 (який це круг)
+                        let currentForm = forms[formIndex];
+
+                        // Визначаємо займенник залежно від форми та поточного циклу
+                        let currentPronoun = "";
+                        if (formIndex === 0) currentPronoun = "yo";
+                        else if (formIndex === 1) currentPronoun = "tú";
+                        else if (formIndex === 2) currentPronoun = singularThirdPersonVariants[cycleIndex];
+                        else if (formIndex === 3) currentPronoun = "nosotros";
+                        else if (formIndex === 4) currentPronoun = "vosotros";
+                        else if (formIndex === 5) currentPronoun = pluralThirdPersonVariants[cycleIndex];
+
+                        // Показуємо форму з ефектом появи
+                        formBox.classList.add('opacity-0', 'translate-y-4');
+
+                        await new Promise(resolve => {
+                            let t = setTimeout(() => {
+                                // Виводимо займенник зверху дрібнішим шрифтом, а саму форму знизу великим
+                                formText.innerHTML = `
+                                    <span class="block text-xs font-semibold uppercase tracking-wider opacity-75 mb-1">${currentPronoun}</span>
+                                    <span>${currentForm.word}</span>
+                                `;
+
+                                // Змінюємо стиль блоку залежно від того, неправильна форма чи ні
+                                if (currentForm.isIrregular) {
+                                    formText.className = "px-6 py-3 bg-[#C8B096] text-white text-2xl font-bold rounded-2xl shadow-md inline-block text-center";
+                                } else {
+                                    formText.className = "px-6 py-3 bg-[#EBE3D5] text-[#594838] text-2xl font-medium rounded-2xl shadow-md inline-block text-center";
+                                }
+                                formBox.classList.remove('opacity-0', 'translate-y-4');
+                                resolve();
+                            }, 200);
+                            timeouts.push(t);
+                        });
+
+                        // Час демонстрації однієї форми
+                        await new Promise(resolve => {
+                            let t = setTimeout(resolve, CONFIG.formDisplayDuration);
+                            timeouts.push(t);
+                        });
+                    }
+
+                    // Невелика пауза перед наступним словом
+                    formBox.classList.add('opacity-0', 'translate-y-4');
+                    await new Promise(resolve => {
+                        let t = setTimeout(resolve, CONFIG.pauseBetweenWords);
+                        timeouts.push(t);
+                    });
+                }
+            }
+
+            if (isRunning) {
+                groupEl.innerText = "Вітаю!";
+                wordEl.innerText = "Кінець тренування! 🎉";
+                translationEl.innerText = "Усі слова пройдено успішно.";
+                formBox.classList.add('opacity-0');
+            }
+        }
+    </script>
+{% endblock %}

@@ -18,7 +18,7 @@ class PresenteVerbs extends Verb
             1 => ['as', 'es'],       // tú
             2 => ['a', 'e'],         // él / ella / usted
             3 => ['amos', 'emos', 'imos'], // nosotros
-            4 => ['áis', 'éis', 'ís'],     // vosotros
+            4 => ['áis', 'éis', 'ís', 'eis', 'is'],     // vosotros
             5 => ['an', 'en']        // ellos / ellas / ustedes
         ];
         if (!isset($endings[$person])) {

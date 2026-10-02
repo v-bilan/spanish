@@ -21,22 +21,29 @@
             </div>
 
             {% for group, verbList in verbs %}
-                <div class="bg-[#F7F2EB] shadow-md rounded-2xl overflow-hidden border border-[#EBE3D5]">
+                <!-- Використовуємо details та відкриваємо за замовчуванням через open -->
+                <details class="bg-[#F7F2EB] shadow-md rounded-2xl overflow-hidden border border-[#EBE3D5] group/accordion" open>
 
-                    <div class="bg-[#D9C3A9] px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <!-- Шапка категорії: summary замість div для згортання/розгортання по кліку -->
+                    <summary class="bg-[#D9C3A9] px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
                         <div>
                             <span class="text-xs font-bold uppercase tracking-wider text-[#594838] bg-[#EFE8DC] px-3 py-1 rounded-full shadow-sm">Група {{ loop.index }}</span>
-                            <h2 class="text-lg font-bold text-[#3B3024] mt-2">{{ group }}</h2>
+                            <h2 class="text-lg font-bold text-[#3B3024] mt-2 inline-flex items-center gap-2">
+                                <!-- Стрілочка, яка обертається при відкритті/закритті -->
+                                <span class="transform transition-transform duration-200 group-open/accordion:rotate-90">▶</span>
+                                {{ group }}
+                            </h2>
                         </div>
-                        <button onclick="openTrainer('{{ group|e('js') }}')" class="px-4 py-2 bg-[#FDFBF7] hover:bg-[#F3ECE1] text-[#594838] text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5 self-start sm:self-auto border border-[#EBE3D5]">
+                        <!-- Зупиняємо стандартну поведінку summary через event.preventDefault(), щоб спрацював лише запуск тренажера -->
+                        <button onclick="event.preventDefault(); openTrainer('{{ group|e('js') }}')" class="px-4 py-2 bg-[#FDFBF7] hover:bg-[#F3ECE1] text-[#594838] text-xs font-bold rounded-lg shadow-sm transition-all flex items-center gap-1.5 self-start sm:self-auto border border-[#EBE3D5]">
                             <span>▶</span> Почати з цієї групи
                         </button>
-                    </div>
+                    </summary>
 
                     <div class="divide-y divide-[#EBE3D5]">
                         {% for verbData in verbList %}
                             <div class="p-6 hover:bg-[#F3ECE1] transition-colors">
-                                 <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                                     <div class="flex flex-col items-start min-w-[160px]">
                                         <span class="text-2xl font-bold text-[#3B3024]">{{ verbData.word }}</span>
                                         <span class="text-sm font-medium text-[#7A6B5D] mt-1">{{ verbData.transl }}</span>
@@ -56,7 +63,7 @@
                             </div>
                         {% endfor %}
                     </div>
-                </div>
+                </details>
             {% endfor %}
 
         </div>
@@ -101,16 +108,16 @@
     </div>
 
     <!-- JavaScript для керування тренажером -->
-    <!-- JavaScript для керування тренажером -->
     <script>
         // Передаємо PHP масив у JavaScript через JSON
         const verbsData = {{ verbs|json_encode|raw }};
 
         // НАЛАШТУВАННЯ ЧАСУ (у мілісекундах: 1000мс = 1 секунда)
         const CONFIG = {
-            wordDisplayDelay: 4000,     // Затримка перед показом форм (показується слово + переклад)
-            formDisplayDuration: 3500,  // Скільки часу видима кожна окрема форма дієслова
-            pauseBetweenWords: 1500     // Пауза між різними словами
+            wordDisplayDelay: 2800,     // Затримка перед показом форм (показується слово + переклад)
+            formDisplayDuration: 2500,  // Скільки часу видима кожна окрема форма дієслова
+            pauseBetweenWords: 1000,     // Пауза між різними словами
+            formAnimationDuration: 500
         };
 
         // Масиви варіантів займенників для 3-ї особи однини та множини (індекси 2 та 5)
@@ -184,7 +191,7 @@
                     // Оновлюємо інформацію на екрані для поточного слова
                     groupEl.innerText = groupName;
                     wordEl.innerText = item.word;
-                    translationEl.innerText = item.translation;
+                    translationEl.innerText = item.transl;
                     formBox.classList.add('opacity-0', 'translate-y-4');
                     formText.innerHTML = '';
                     progressEl.innerText = `Слово ${globalWordIndex} з ${totalWords}`;
@@ -238,7 +245,7 @@
                                 }
                                 formBox.classList.remove('opacity-0', 'translate-y-4');
                                 resolve();
-                            }, 200);
+                            }, CONFIG.formAnimationDuration);
                             timeouts.push(t);
                         });
 

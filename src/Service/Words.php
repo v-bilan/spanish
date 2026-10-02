@@ -8,9 +8,9 @@ class Words
         private readonly CsvManager $csvManager
     ) {}
 
-    public function getWords(): array
+    public function getWords(string $path='/csv/words.csv'): array
     {
-        $dataRows = $this->csvManager->readCsv($this->getPath());
+        $dataRows = $this->csvManager->readCsv($path);
 
         $items = [];
         $key = null;
@@ -18,7 +18,8 @@ class Words
             if (!($dataRow[0] ?? null)) {
                 continue;
             }
-            if (empty($dataRow[1] ?? null)) {
+
+            if (!($dataRow[1] ?? null)) {
                 $key = trim($dataRow[0]);
                 continue;
             }
@@ -26,10 +27,4 @@ class Words
         }
         return $items;
     }
-
-    protected function getPath(): string
-    {
-        return '/csv/words.csv';
-    }
-
 }

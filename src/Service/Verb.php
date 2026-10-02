@@ -32,7 +32,8 @@ abstract class Verb
             if (!($dataRow[0] ?? null)) {
                 continue;
             }
-            if (empty($dataRow[1] ?? null)) {
+
+            if (!($dataRow[1] ?? null)) {
                 $key = trim($dataRow[0]);
                 continue;
             }

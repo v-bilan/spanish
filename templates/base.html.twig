@@ -31,9 +31,23 @@
 
             <!-- Посилання меню -->
             <div class="hidden md:flex items-center gap-6">
-                <a href="{{ path('app_words_list') }}" class="text-sm font-semibold text-[#594838] hover:text-[#3B3024] transition-colors px-3 py-2 rounded-lg hover:bg-[#EFE8DC] focus:outline-none">
-                    Слова
-                </a>
+                <div class="relative group">
+                    <button class="text-sm font-semibold text-[#594838] hover:text-[#3B3024] transition-colors px-3 py-2 rounded-lg hover:bg-[#EFE8DC] flex items-center gap-1 focus:outline-none">
+                        Слова
+                        <svg class="w-4 h-4 transition-transform group-hover:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+
+                    <!-- Підменю (Dropdown) -->
+                    <div class="absolute left-0 pt-2 w-56 hidden group-hover:block z-20">
+                        <div class="bg-[#F7F2EB] border border-[#EBE3D5] rounded-xl shadow-lg py-2">
+                            <a href="{{ path('app_words_list') }}" class="block px-4 py-2 text-sm text-[#594838] hover:bg-[#EFE8DC] hover:text-[#3B3024] focus:outline-none">Слова</a>
+                            <div class="border-t border-[#EBE3D5] my-1"></div>
+                            <a href="{{ path('app_words_preposiciones') }}" class="block px-4 py-2 text-sm text-[#594838] hover:bg-[#EFE8DC] hover:text-[#3B3024] focus:outline-none">Прислівники та прийменники</a>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Випадаюче меню для Дієслів -->
                 <div class="relative group">
@@ -47,13 +61,13 @@
                     <!-- Підменю (Dropdown) -->
                     <div class="absolute left-0 pt-2 w-56 hidden group-hover:block z-20">
                         <div class="bg-[#F7F2EB] border border-[#EBE3D5] rounded-xl shadow-lg py-2">
-                            <div class="px-4 py-1 text-xs font-bold uppercase text-[#7A6B5D] tracking-wider">Presente</div>
-                            <a href="{{ path('app_verbs_presente_list') }}" class="block px-4 py-2 text-sm text-[#594838] hover:bg-[#EFE8DC] hover:text-[#3B3024] focus:outline-none">Indefinido</a>
-
+                            <a href="{{ path('app_verbs_presente_list') }}" class="block px-4 py-2 text-sm text-[#594838] hover:bg-[#EFE8DC] hover:text-[#3B3024] focus:outline-none">Presente Indefinido</a>
                             <div class="border-t border-[#EBE3D5] my-1"></div>
-
-                            <div class="px-4 py-1 text-xs font-bold uppercase text-[#7A6B5D] tracking-wider">Pretérito</div>
-                            <a href="{{ path('app_verbs_preterito_list') }}" class="block px-4 py-2 text-sm text-[#594838] hover:bg-[#EFE8DC] hover:text-[#3B3024] focus:outline-none">Indefinido</a>
+                            <a href="{{ path('app_verbs_preterito_list') }}" class="block px-4 py-2 text-sm text-[#594838] hover:bg-[#EFE8DC] hover:text-[#3B3024] focus:outline-none">Pretérito Indefinido</a>
+                            <div class="border-t border-[#EBE3D5] my-1"></div>
+                            <a href="{{ path('app_infinitivo') }}" class="block px-4 py-2 text-sm text-[#594838] hover:bg-[#EFE8DC] hover:text-[#3B3024] focus:outline-none">Perífrasis verbales</a>
+                            <div class="border-t border-[#EBE3D5] my-1"></div>
+                            <a href="{{ path('app_verbos_con_preposiciones') }}" class="block px-4 py-2 text-sm text-[#594838] hover:bg-[#EFE8DC] hover:text-[#3B3024] focus:outline-none">Verbos con Preposiciones</a>
                         </div>
                     </div>
                 </div>
